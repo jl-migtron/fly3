@@ -17,115 +17,74 @@ public class ProductsService {
     Logger logger = LoggerFactory.getLogger(ProductsService.class);
 
     @Autowired
-    CategoriesRepo categoriesRepo;
+    ProductsRepo productsRepo;
 
-    // get all categories in repo
-    public List<Category> getAllCategories() {
-        return categoriesRepo.findAll();
+    // get all products in repo
+    public List<Product> getAllProducts() {
+        return productsRepo.findAll();
     }
 
-    // get category with given id
-    public Category getCategoryById(Long id) {
-        return categoriesRepo.findById(id).orElseThrow();
+    // get product with given id
+    public Product getProductById(Long id) {
+        return productsRepo.findById(id).orElseThrow();
     }
 
-    // get category with given id
-    public List<Category> getSubcategoriesForId(Long id) {
-        return categoriesRepo.findByParentCat(id);
+    // get product with given category
+    public List<Product> getProductsByCategory(Category cat) {
+        return productsRepo.findByCategory(cat);
     }
 
-    // create a category
-    public Category createCategory(Category category) {
+    // create a product
+    public Product createProduct(Product product) {
         try {
-            Category category2 = categoriesRepo.save(category);
-            logger.info("Created category " + category2.getId().toString());
-            return category2;
+            Product product2 = productsRepo.save(product);
+            logger.info("Created product " + product2.getId().toString());
+            return product2;
         } catch (Exception ex) {
-            logger.error("Failed category creation", ex);
+            logger.error("Failed product creation", ex);
             return null;
         }
     }
 
-    // update category with given id
-    public Category updateCategory(Long id, Category category) {
+    // update product with given id
+    public Product updateProduct(Long id, Product product) {
         try {
-            Optional<Category> category2 = categoriesRepo.findById(id);
+            Product product2 = productsRepo.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
 
-            category2.ifPresentOrElse(cat2 -> {
-                cat2.setName(category.getName());
-                cat2.setParentCat(category.getParentCat());
-                cat2.setListProducts(category.getListProducts());
-                categoriesRepo.save(cat2);
-                logger.info("Updated category " + id);
-            },
-                () -> logger.warn("Failed category update: no category found with id " + id));
-
-            return category2.get();
+            product2.setName(product.getName());
+            product2.setPrice(product.getPrice());
+            product2.setCategory(product.getCategory());
+            product2.setImage(product.getImage());
+            Product product3 = productsRepo.save(product2);
+            logger.info("Updated product " + id);
+            return product3;
         } catch (Exception ex) {
-            logger.error("Failed category update", ex);
+            logger.error("Failed product update", ex);
             return null;
         }
     }
 
-    // add products to category with given id
-    public Category addCategoryProducts(Long id, List<Product> products) {
+    // delete product with given id
+    public boolean deleteProduct(Long id) {
         try {
-            Optional<Category> category2 = categoriesRepo.findById(id);
+            Optional<Product> product2 = productsRepo.findById(id);
 
-            category2.ifPresentOrElse(cat2 -> {
-                cat2.getListProducts().addAll(products);
-                categoriesRepo.save(cat2);
-                logger.info("Added " + products.size() + " products to category " + id);
+            product2.ifPresentOrElse(cat2 -> {
+                productsRepo.deleteById(id);
+                logger.info("Deleted product " + id);
             },
-                () -> logger.warn("Failed adding category products: no category found with id " + id));
+                () -> logger.warn("Failed product delete: no product found with id " + id));
 
-            return category2.get();
+            return product2.isPresent();
         } catch (Exception ex) {
-            logger.error("Failed adding category products", ex);
-            return null;
-        }
-    }
-
-    // add products to category with given id
-    public Category deleteCategoryProducts(Long id, List<Product> products) {
-        try {
-            Optional<Category> category2 = categoriesRepo.findById(id);
-
-            category2.ifPresentOrElse(cat2 -> {
-                cat2.getListProducts().removeAll(products);
-                categoriesRepo.save(cat2);
-                logger.info("Deleted " + products.size() + " products from category " + id);
-            },
-                () -> logger.warn("Failed deleting category products: no category found with id " + id));
-
-            return category2.get();
-        } catch (Exception ex) {
-            logger.error("Failed deleting category products", ex);
-            return null;
-        }
-    }
-
-    // delete category with given id
-    public boolean deleteCategory(Long id) {
-        try {
-            Optional<Category> category2 = categoriesRepo.findById(id);
-
-            category2.ifPresentOrElse(cat2 -> {
-                categoriesRepo.deleteById(id);
-                logger.info("Deleted category " + id);
-            },
-                () -> logger.warn("Failed category delete: no category found with id " + id));
-
-            return category2.isPresent();
-        } catch (Exception ex) {
-            logger.error("Failed category delete", ex);
+            logger.error("Failed product delete", ex);
             return false;
         }
     }
 
-    // delete all categories in repo
+    // delete all products in repo
     public void deleteAll() {
-        categoriesRepo.deleteAll();
-        logger.info("All categories deleted");
+        productsRepo.deleteAll();
+        logger.info("All products deleted");
     }
 }
