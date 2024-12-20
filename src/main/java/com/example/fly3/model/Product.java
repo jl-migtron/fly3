@@ -1,4 +1,4 @@
-package com.example.fly3;
+package com.example.fly3.model;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -8,16 +8,20 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.io.File;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  *
  * @author jluis.albarral@gmail.com
  */
-@Entity
-@Data
+@AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
+@Entity
 public class Product {
 
     @Id
@@ -30,10 +34,4 @@ public class Product {
     private Category category;
     private File image;
 
-    public Product(String name, int price, Category category, File image) {
-        this.name = name;
-        this.price = price;
-        this.category = category;
-        this.image = image;
-    }
 }
