@@ -1,6 +1,5 @@
 package com.example.fly3.model;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,9 +8,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.io.File;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /**
  *
@@ -19,8 +17,7 @@ import lombok.Setter;
  */
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
 @Entity
 public class Product {
 
@@ -29,7 +26,8 @@ public class Product {
     private Long id;
     private String name;
     private int price;
-    @ManyToOne(cascade = CascadeType.ALL)
+
+    @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
     private File image;

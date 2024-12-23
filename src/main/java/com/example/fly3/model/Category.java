@@ -1,5 +1,6 @@
 package com.example.fly3.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,9 +10,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.ToString;
 
 /**
  *
@@ -19,8 +21,7 @@ import lombok.Setter;
  */
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
 @Entity
 public class Category implements Serializable {
 
@@ -30,6 +31,8 @@ public class Category implements Serializable {
     private String name;
     private Long parentCat;
 
-    @OneToMany(mappedBy = "category")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     List<Product> products = new ArrayList();
 }
