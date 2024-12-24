@@ -49,27 +49,27 @@ public class CategoryService {
 
     // update category with given id
     public Category updateCategory(Long id, Category category) {
+        Category cat2 = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category not found " + id.toString()));
         try {
-            Category cat2 = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category not found " + id.toString()));
-
             cat2.setName(category.getName());
             cat2.setParentCat(category.getParentCat());
             repo.save(cat2);
             logger.info("Updated category " + id);
             return cat2;
         } catch (Exception ex) {
+            logger.error("Failed category update:", ex);
             throw new ServiceException("Failed category update:" + ex);
         }
     }
 
     // delete category with given id
     public void deleteCategory(Long id) {
+        Category cat2 = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category not found " + id.toString()));
         try {
-            Category cat2 = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category not found " + id.toString()));
-
             repo.delete(cat2);
             logger.info("Deleted category " + id);
         } catch (Exception ex) {
+            logger.error("Failed category delete:", ex);
             throw new ServiceException("Failed category delete:" + ex);
         }
     }

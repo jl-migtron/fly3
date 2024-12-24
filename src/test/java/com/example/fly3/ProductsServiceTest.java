@@ -113,8 +113,7 @@ class ProductsServiceTest {
         Product product = new Product(null, "coke", 100, null, new File("/coke.img"));
         productsService.createProduct(sodas.getId(), product);
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            productsService.deleteProduct(WRONG_ID);
-        });
+        assertThrows(ResourceNotFoundException.class,
+            () -> productsService.deleteProduct(WRONG_ID));
     }
 }

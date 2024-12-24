@@ -10,13 +10,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-@Disabled
 class CategoryServiceTest {
 
     private final String FOOD = "food";
@@ -68,14 +66,14 @@ class CategoryServiceTest {
     }
 
     @Test
-    public void givenSubcategoriesCreated_whenParentFetched_thenSubcategoriesReturned() throws Exception {
+    public void givenSubcategoriesCreated_whenParentSubcatsFetched_thenSubcategoriesReturned() throws Exception {
 
         Category food = new Category(null, FOOD, null, null);
         Category drinks = new Category(null, DRINKS, null, null);
         food = categoryService.createCategory(food);
         drinks = categoryService.createCategory(drinks);
         Category snacks = new Category(null, SNACKS, food.getId(), null);
-        Category sodas = new Category(null, SODAS, drinks.getId(), null);
+        categoryService.createCategory(snacks);
 
         List<Category> subcats = categoryService.getSubcategoriesForId(food.getId());
 
@@ -112,8 +110,7 @@ class CategoryServiceTest {
         Category food = new Category(null, FOOD, null, null);
         food = categoryService.createCategory(food);
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            categoryService.deleteCategory(WRONG_ID);
-        });
+        assertThrows(ResourceNotFoundException.class,
+            () -> categoryService.deleteCategory(WRONG_ID));
     }
 }
