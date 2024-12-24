@@ -51,8 +51,8 @@ public class ProductService {
     }
 
     // get product with given category
-    public List<Product> getProductsByCategory(Category cat) {
-        return repo.findAllByCategory_Id(cat.getId());
+    public List<Product> getProductsByCategory(Long catId) {
+        return repo.findAllByCategory_Id(catId);
     }
 
     // update product with given id
