@@ -25,6 +25,12 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
+    @PostMapping("/{catId}/products")
+    public ResponseEntity<Product> createProduct(@PathVariable Long catId, @RequestBody Product product) {
+        Product prod = productService.createProduct(catId, product);
+        return ResponseEntity.ok(prod);
+    }
+
     @GetMapping("/{catId}/products")
     public ResponseEntity<List<Product>> getAllProductsForCategory(@PathVariable Long catId) {
         List<Product> products = productService.getProductsByCategory(catId);
@@ -35,12 +41,6 @@ public class ProductController {
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
         Product product = productService.getProductById(id);
         return ResponseEntity.ok().body(product);
-    }
-
-    @PostMapping("/{catId}/products")
-    public ResponseEntity<Product> createProduct(@PathVariable Long catId, @RequestBody Product product) {
-        Product prod = productService.createProduct(catId, product);
-        return ResponseEntity.ok(prod);
     }
 
     @PutMapping("/products/{id}")

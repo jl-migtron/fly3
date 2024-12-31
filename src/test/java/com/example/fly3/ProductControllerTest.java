@@ -1,138 +1,100 @@
 package com.example.fly3;
 
-import com.example.fly3.exceptions.ResourceNotFoundException;
 import com.example.fly3.model.Category;
 import com.example.fly3.model.Product;
-import com.example.fly3.repos.CategoryRepo;
 import com.example.fly3.services.ProductService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-class ProductsServiceTest {
+@AutoConfigureMockMvc
+class ProductControllerTest {
 
-    private final String FOOD = "food";
     private final String DRINKS = "drinks";
-    private final String SNACKS = "snacks";
-    private final String SODAS = "sodas";
-    private final Long WRONG_ID = -1000L;
 
     @Autowired
-    private ProductService productsService;
-    @Autowired
-    private CategoryRepo catRepo;
+    MockMvc mockMvc;
 
-    @BeforeEach
-    // set categories and clean products before each test
-    public void prepare() throws Exception {
-        // categories        
-        catRepo.deleteAll();
-        Category food = catRepo.save(new Category(null, FOOD, null, null));
-        Category snacks = catRepo.save(new Category(null, SNACKS, food.getId(), null));
-        Category drinks = catRepo.save(new Category(null, DRINKS, null, null));
-        Category sodas = catRepo.save(new Category(null, SODAS, drinks.getId(), null));
-        productsService.deleteAll();
+    @MockitoBean
+    private ProductService service;
+
+    public static final String TEST_CAT_PROD_URL = "/api/categories/{catId}/products";
+    public static final String TEST_PROD_URL = "/api/categories/products/{id}";
+
+    @Test
+    public void testCreateProduct() throws Exception {
+        Product coke = createTestProduct();
+        Long catId = coke.getCategory().getId();
+        Long prodId = coke.getId();
+        when(service.createProduct(anyLong(), any(Product.class))).thenReturn(coke);
+
+        String jsonRequestBody = new ObjectMapper().writeValueAsString(coke);
+
+        // Send POST request with product
+        ResultActions result = mockMvc.perform(post(TEST_CAT_PROD_URL, catId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jsonRequestBody));
+
+        // Assert that product is returned
+        result.andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.id").value(prodId));
     }
 
     @Test
-    public void whenProductCreated_thenProductExists() throws Exception {
+    public void testGetProductById() throws Exception {
 
-        Category sodas = catRepo.findByName(SODAS);
-        Product product = new Product(null, "coke", 100, null, new File("/coke.img"));
-        productsService.createProduct(sodas.getId(), product);
+        Product coke = createTestProduct();
+        Long prodId = coke.getId();
+        when(service.getProductById(anyLong())).thenReturn(coke);
 
-        List<Product> products = productsService.getAllProducts();
-        Product product2 = products.get(0);
+        // Send GET request for product
+        ResultActions result = mockMvc.perform(get(TEST_PROD_URL, prodId));
 
-        assertTrue(products.size() == 1);
-        assertEquals(product.getName(), product2.getName());
-        assertEquals(product.getPrice(), product2.getPrice());
-        assertEquals(product.getCategory().getId(), product2.getCategory().getId());
-        assertEquals(product.getImage(), product2.getImage());
+        // Assert that product is returned
+        result.andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.id").value(prodId));
     }
 
     @Test
-    public void givenProductCreated_whenProductFetchedById_thenProductReturned() throws Exception {
+    public void testGetProductsByCategory() throws Exception {
 
-        Category sodas = catRepo.findByName(SODAS);
-        Product product = new Product(null, "coke", 100, null, new File("/coke.img"));
-        product = productsService.createProduct(sodas.getId(), product);
+        List<Product> products = createTestProducts();
+        Long catId = products.get(0).getCategory().getId();
+        when(service.getProductsByCategory(anyLong())).thenReturn(products);
 
-        Product product2 = productsService.getProductById(product.getId());
+        // Send GET request for category products
+        ResultActions result = mockMvc.perform(get(TEST_CAT_PROD_URL, catId));
 
-        assertEquals(product, product2);
+        // Assert that products are returned       
+        result.andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+        for (int i = 0; i < products.size(); i++) {
+            Product product = products.get(i);
+            result.andExpect(jsonPath("$[" + i + "].id").value(product.getId()))
+                .andExpect(jsonPath("$[" + i + "].name").value(product.getName()));
+        }
     }
 
-    @Test
-    public void givenProductCreated_whenWrongProductFetched_thenNotFoundException() throws Exception {
-
-        Category sodas = catRepo.findByName(SODAS);
-        Product product = new Product(null, "coke", 100, null, new File("/coke.img"));
-        productsService.createProduct(sodas.getId(), product);
-
-        assertThrows(ResourceNotFoundException.class,
-            () -> productsService.getProductById(WRONG_ID));
-    }
-
-    @Test
-    public void givenProductCreated_whenProductChangedAndSaved_thenChangedProductReturned() throws Exception {
-
-        Category sodas = catRepo.findByName(SODAS);
-        Product product = new Product(null, "coke", 100, null, new File("/coke.img"));
-        product = productsService.createProduct(sodas.getId(), product);
-
-        product.setName("fanta");
-        product.setPrice(111);
-        product.setImage(new File("/fanta.img"));
-
-        Product product2 = productsService.updateProduct(product.getId(), product);
-
-        assertEquals(product, product2);
-    }
-
-    @Test
-    public void givenProductCreated_whenProductDeleted_thenRepoEmpty() throws Exception {
-
-        Category sodas = catRepo.findByName(SODAS);
-        Product product = new Product(null, "coke", 100, null, new File("/coke.img"));
-        Product product2 = productsService.createProduct(sodas.getId(), product);
-
-        productsService.deleteProduct(product2.getId());
-
-        assertTrue(productsService.getAllProducts().isEmpty());
-    }
-
-    @Test
-    public void givenProductCreated_whenWrongProductDeleted_thenNotFoundException() throws Exception {
-
-        Category sodas = catRepo.findByName(SODAS);
-        Product product = new Product(null, "coke", 100, null, new File("/coke.img"));
-        productsService.createProduct(sodas.getId(), product);
-
-        assertThrows(ResourceNotFoundException.class, () -> {
-            productsService.deleteProduct(WRONG_ID);
-        });
-    }
-//    @Test
-//    public void testGetProductById() throws Exception {
-//
-//        // Create new cart & get its id
-//        final Integer CART_ID = productsService.createCategory().getId();
-//        // Send GET request for the new cart
-//        ResultActions result = mockMvc.perform(get("/api/carts/{id}", CART_ID));
-//
-//        // Assert that the new cart is returned
-//        result.andExpect(status().isOk())
-//            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-//            .andExpect(jsonPath("$.id", is(CART_ID)));
-//    }
 //
 //    @Test
 //    public void testUpdateProduct() throws Exception {
@@ -201,4 +163,22 @@ class ProductsServiceTest {
 //        // Assert that not found returned
 //        result.andExpect(status().isNotFound());
 //    }
+    private Product createTestProduct() {
+        Long catId = 25L;
+        Long prodId = 123L;
+        Category drinks = new Category(catId, DRINKS, null, null);
+        return new Product(prodId, "coke", 100, drinks, new File("/coke.img"));
+    }
+
+    private List<Product> createTestProducts() {
+        List<Product> products = new ArrayList<>();
+        Long catId = 25L;
+        Long prod1Id = 123L;
+        Long prod2Id = 124L;
+        Category drinks = new Category(catId, DRINKS, null, null);
+        products.add(new Product(prod1Id, "coke", 100, drinks, new File("/coke.img")));
+        products.add(new Product(prod2Id, "fanta", 100, drinks, new File("/fanta.img")));
+
+        return products;
+    }
 }
