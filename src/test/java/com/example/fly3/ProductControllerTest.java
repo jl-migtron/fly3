@@ -10,6 +10,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -18,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -95,74 +97,39 @@ class ProductControllerTest {
         }
     }
 
-//
-//    @Test
-//    public void testUpdateProduct() throws Exception {
-//
-//        // Create new cart & get its id
-//        final Integer CART_ID = productsService.createProduct().getId();
-//        String addedProductsJson = "[{\"id\": 1011, \"desc\": \"martillo\", \"amount\": 1}, {\"id\": 1022, \"desc\": \"tornillos\", \"amount\": 100}]";
-//
-//        // Send PUT request with 2 products for the new cart
-//        ResultActions result = mockMvc.perform(put("/api/carts/{id}", CART_ID)
-//            .contentType(MediaType.APPLICATION_JSON)
-//            .content(addedProductsJson));
-//
-//        // Assert that the new cart now has 2 products
-//        result.andExpect(status().isOk())
-//            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-//            .andExpect(jsonPath("$.id", is(CART_ID)))
-//            .andExpect(jsonPath("$.products", aMapWithSize(2)));
-//    }
-//
-//    @Test
-//    public void testDeleteProduct() throws Exception {
-//
-//        // Create new cart & get its id
-//        final Integer CART_ID = productsService.createProduct().getId();
-//        // Send DELETE request for the new cart
-//        ResultActions result = mockMvc.perform(delete("/api/carts/{id}", CART_ID));
-//
-//        // Assert that no content status is returned
-//        result.andExpect(status().isNoContent());
-//    }
-//
-//    @Test
-//    public void testGetWrongProduct() throws Exception {
-//
-//        final Integer CART_ID = 99;
-//        // Send GET request for a non existing cart
-//        ResultActions result = mockMvc.perform(get("/api/carts/{id}", CART_ID));
-//
-//        // Assert that not found returned
-//        result.andExpect(status().isNotFound());
-//    }
-//
-//    @Test
-//    public void testUpdateWrongProduct() throws Exception {
-//
-//        final Integer CART_ID = 99;
-//        String addedProductsJson = "[{\"id\": 1011, \"desc\": \"martillo\", \"amount\": 1}, {\"id\": 1022, \"desc\": \"tornillos\", \"amount\": 100}]";
-//
-//        // Send PUT request with 2 products for a non existing cart
-//        ResultActions result = mockMvc.perform(put("/api/carts/{id}", CART_ID)
-//            .contentType(MediaType.APPLICATION_JSON)
-//            .content(addedProductsJson));
-//
-//        // Assert that not found returned
-//        result.andExpect(status().isNotFound());
-//    }
-//
-//    @Test
-//    public void testDeleteWrongProduct() throws Exception {
-//
-//        final Integer CART_ID = 99;
-//        // Send DELETE request for a non existing cart
-//        ResultActions result = mockMvc.perform(delete("/api/carts/{id}", CART_ID));
-//
-//        // Assert that not found returned
-//        result.andExpect(status().isNotFound());
-//    }
+    @Test
+    public void testUpdateProduct() throws Exception {
+
+        Product coke = createTestProduct();
+        Long prodId = coke.getId();
+        when(service.updateProduct(anyLong(), any(Product.class))).thenReturn(coke);
+
+        String jsonRequestBody = new ObjectMapper().writeValueAsString(coke);
+
+        // Send POST request with product
+        ResultActions result = mockMvc.perform(post(TEST_PROD_URL, prodId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jsonRequestBody));
+
+        // Assert that product is returned
+        result.andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.id").value(prodId));
+    }
+
+    @Test
+    public void testDeleteProduct() throws Exception {
+
+        Long prodId = 123L;
+        doNothing().when(service).deleteProduct(anyLong());
+
+        // Send DELETE request with product
+        ResultActions result = mockMvc.perform(delete(TEST_PROD_URL, prodId));
+
+        // Assert that no content status is returned
+        result.andExpect(status().isNoContent());
+    }
+
     private Product createTestProduct() {
         Long catId = 25L;
         Long prodId = 123L;
