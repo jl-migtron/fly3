@@ -8,6 +8,7 @@ import com.example.fly3.model.OrderItem;
 import com.example.fly3.model.OrderStatus;
 import com.example.fly3.model.Payment;
 import com.example.fly3.model.PaymentStatus;
+import com.example.fly3.repos.OrderItemRepo;
 import com.example.fly3.repos.OrderRepo;
 import java.util.List;
 import org.slf4j.Logger;
@@ -26,6 +27,8 @@ public class OrderService {
 
     @Autowired
     OrderRepo repo;
+    @Autowired
+    OrderItemRepo itemRepo;
 
     public Order createOrder(int seatNum, String seatLetter) {
         try {
@@ -75,11 +78,13 @@ public class OrderService {
         try {
             order2.getBuyer().setEmail(email);
             checkStock(orderItems);
-            order2.getItems().addAll(orderItems);
             int price = computePrice(orderItems);
             order2.setPrice(price);
-            // total-price
             repo.save(order2);
+            orderItems.forEach(item -> {
+                item.setOrder(order2);
+                itemRepo.save(item);
+            });
             logger.info("Updated order " + id);
             return order2;
         } catch (Exception ex) {
@@ -110,10 +115,11 @@ public class OrderService {
     }
 
     private int computePrice(List<OrderItem> items) {
-        return 0;
+        int price = items.stream().mapToInt(item -> item.getPrice() * item.getQuantity()).sum();
+        return price;
     }
 
     private void updateStock(List<OrderItem> items) {
-
+        // TO DO
     }
 }
