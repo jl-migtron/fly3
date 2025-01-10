@@ -1,14 +1,9 @@
 package com.example.fly3.model;
 
-import jakarta.persistence.Entity;
+import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import java.sql.Date;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,20 +15,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Entity
+@Embeddable
 public class Payment {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
 
     private String card;
     @Enumerated(EnumType.STRING)
-    private PaymentStatus status;
+    private PaymentStatus payStatus;
     private Date date;
     private String gateway;
-
-    @OneToOne
-    @JoinColumn(name = "order_id")
-    private Order order;
 }
