@@ -50,9 +50,9 @@ class CategoryServiceTest {
         Category food = new Category(null, FOOD, null, null);
         food = categoryService.createCategory(food);
 
-        Category product = categoryService.getCategoryById(food.getId());
+        Category cat = categoryService.getCategoryById(food.getId());
 
-        assertEquals(food, product);
+        assertEquals(food, cat);
     }
 
     @Test

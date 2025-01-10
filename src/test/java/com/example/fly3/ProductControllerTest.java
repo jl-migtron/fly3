@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -107,7 +108,7 @@ class ProductControllerTest {
         String jsonRequestBody = new ObjectMapper().writeValueAsString(coke);
 
         // Send POST request with product
-        ResultActions result = mockMvc.perform(post(TEST_PROD_URL, prodId)
+        ResultActions result = mockMvc.perform(put(TEST_PROD_URL, prodId)
             .contentType(MediaType.APPLICATION_JSON)
             .content(jsonRequestBody));
 
