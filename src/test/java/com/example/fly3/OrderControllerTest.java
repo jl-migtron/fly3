@@ -35,7 +35,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -73,7 +72,6 @@ class OrderControllerTest {
 
         // Assert that order is returned
         result.andExpect(status().isOk())
-            .andDo(print())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.buyer.seatNum").value(SEAT))
             .andExpect(jsonPath("$.buyer.seatLetter").value(LETTER));
@@ -90,7 +88,6 @@ class OrderControllerTest {
 
         // Assert that order is returned
         result.andExpect(status().isOk())
-            .andDo(print())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.id").value(ID));
     }
@@ -108,7 +105,6 @@ class OrderControllerTest {
 
         // Assert that order is returned
         result.andExpect(status().isOk())
-            .andDo(print())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON));
         for (int i = 0; i < orders.size(); i++) {
             Order order = orders.get(i);
@@ -132,7 +128,6 @@ class OrderControllerTest {
 
         // Assert that order is returned with proper items
         result.andExpect(status().isOk())
-            .andDo(print())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.id").value(order.getId()))
             .andExpect(jsonPath("$.buyer.email").value(order.getBuyer().getEmail()));
@@ -160,7 +155,6 @@ class OrderControllerTest {
 
         // Assert that order is returned with finished status
         result.andExpect(status().isOk())
-            .andDo(print())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.id").value(order.getId()))
             .andExpect(jsonPath("$.status").value(OrderStatus.FINISHED.name()));
