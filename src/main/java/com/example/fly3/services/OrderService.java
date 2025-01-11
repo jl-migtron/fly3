@@ -71,6 +71,11 @@ public class OrderService {
         return ordersRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Order not found " + id.toString()));
     }
 
+    // get orders by status
+    public List<Order> getOrdersByStatus(OrderStatus status) {
+        return ordersRepo.findAllByStatus(status);
+    }
+
     // delete order with given id
     public void deleteOrder(Long id) {
         Order cat2 = ordersRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Order not found " + id.toString()));

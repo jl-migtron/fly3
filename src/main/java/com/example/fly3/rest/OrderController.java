@@ -2,6 +2,7 @@ package com.example.fly3.rest;
 
 import com.example.fly3.model.Order;
 import com.example.fly3.model.OrderItem;
+import com.example.fly3.model.OrderStatus;
 import com.example.fly3.model.Payment;
 import com.example.fly3.services.OrderService;
 import java.util.List;
@@ -29,15 +30,27 @@ public class OrderController {
     private OrderService orderService;
 
     @PostMapping()
-    public ResponseEntity<Order> createOrder(@RequestParam Integer seatNum, @RequestParam String seatLetter) {
-        Order order = orderService.createOrder(seatNum, seatLetter);
+    public ResponseEntity<Order> createOrder(@RequestParam Integer seatnum, @RequestParam String seatletter) {
+        Order order = orderService.createOrder(seatnum, seatletter);
         return ResponseEntity.ok(order);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Order>> getAllOrders() {
+        List<Order> orders = orderService.getAllOrders();
+        return ResponseEntity.ok().body(orders);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
         Order order = orderService.getOrderById(id);
-        return ResponseEntity.ok().body(order);
+        return ResponseEntity.ok(order);
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<List<Order>> getOrdersByStatus(@RequestParam OrderStatus status) {
+        List<Order> orders = orderService.getOrdersByStatus(status);
+        return ResponseEntity.ok().body(orders);
     }
 
     @PutMapping("/{id}/update")
