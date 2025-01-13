@@ -76,6 +76,20 @@ class OrderServiceTest {
     }
 
     @Test
+    public void givenOrderUpdated_whenOrderCancelled_thenStockRestored() throws Exception {
+
+        Order order = orderService.createOrder(25, "D");
+        String email = "mark@gmail.com";
+        orderService.initStock(STOCK_SIZE);
+        List<OrderItem> items = createTestOrderItems(5);
+        orderService.updateOrder(order.getId(), email, items);
+
+        Order order2 = orderService.cancelOrder(order.getId());
+
+        assertEquals(STOCK_SIZE, orderService.getProductStock(items.get(0).getProductId()));
+    }
+
+    @Test
     public void givenOrderCreated_whenOrderUpdated_thenChangesApplied() throws Exception {
 
         Order order = orderService.createOrder(25, "D");
@@ -99,7 +113,7 @@ class OrderServiceTest {
         String email = "mark@gmail.com";
 
         orderService.initStock(STOCK_SIZE);
-        List<OrderItem> items = createTestOrderItems(15);
+        List<OrderItem> items = createTestOrderItems(STOCK_SIZE + 5);
         Order order2 = orderService.updateOrder(order.getId(), email, items);
 
         List<OrderItem> items2 = order2.getItems();
@@ -142,11 +156,13 @@ class OrderServiceTest {
         Order order = orderService.createOrder(25, "D");
         String email = "mark@gmail.com";
 
+        orderService.initStock(STOCK_SIZE);
         List<OrderItem> items = createTestOrderItems(5);
         orderService.updateOrder(order.getId(), email, items);
         Order order2 = orderService.finishOrder(order.getId(), createTestPayment(PaymentStatus.PAYMENTFAILED));
 
         assertEquals(OrderStatus.DROPPED, order2.getStatus());
+        assertEquals(STOCK_SIZE, orderService.getProductStock(items.get(0).getProductId()));
     }
 
     @Test

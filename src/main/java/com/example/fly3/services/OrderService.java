@@ -50,9 +50,13 @@ public class OrderService {
     }
 
     // cancel order with given id
+    @Transactional
     public Order cancelOrder(Long id) {
         Order order = ordersRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Order not found " + id.toString()));
         try {
+            if (order.getStatus().equals(OrderStatus.OPEN) && order.getItems() != null) {
+                restoreStock(order.getItems());
+            }
             order.setStatus(OrderStatus.DROPPED);
             Order order2 = ordersRepo.save(order);
             logger.info("Cancelled order " + order2);
@@ -150,6 +154,11 @@ public class OrderService {
     // initialized the stock of all products to given amount
     public void initStock(int amount) {
         stock.initStock(amount);
+    }
+
+    // get stock for given product
+    public Integer getProductStock(long prodId) {
+        return stock.getProductStock(prodId);
     }
 
     // order items are checked against the available stock
