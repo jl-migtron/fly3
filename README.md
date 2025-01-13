@@ -98,8 +98,7 @@ A SimpleStock component has been provided for tests purposes. It's composed by 2
 For production a proper repository, a service and a rest controller should be created for real stock management. 
 
 ## STOCK SAFETY
-To avoid stock race conditions (two customers ordering the same product) a product stock is considered "consumed" as soon as orders are updated (still open).
-If the order is eventually cancelled or finished with failed payment the "consumed" stocks are automatically "restored". 
+To avoid stock race conditions (stock differences between items selection and payment moments) a product stock is considered "consumed" as soon as orders are updated (still open). If the order is eventually cancelled or finished with failed payment the "consumed" stocks are automatically "restored". 
 
 ## TEST EXAMPLES
 
