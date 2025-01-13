@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -19,37 +18,36 @@ import org.springframework.web.bind.annotation.RestController;
  * @author jluis.albarral@gmail.com
  */
 @RestController
-@RequestMapping("/api/categories")
 public class ProductController {
 
     @Autowired
     private ProductService productService;
 
-    @PostMapping("/{catId}/products")
+    @PostMapping("/api/categories/{catId}/products")
     public ResponseEntity<Product> createProduct(@PathVariable Long catId, @RequestBody Product product) {
         Product prod = productService.createProduct(catId, product);
         return ResponseEntity.ok(prod);
     }
 
-    @GetMapping("/{catId}/products")
+    @GetMapping("/api/categories/{catId}/products")
     public ResponseEntity<List<Product>> getAllProductsForCategory(@PathVariable Long catId) {
         List<Product> products = productService.getProductsByCategory(catId);
         return ResponseEntity.ok().body(products);
     }
 
-    @GetMapping("/products/{id}")
+    @GetMapping("/api/products/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
         Product product = productService.getProductById(id);
         return ResponseEntity.ok().body(product);
     }
 
-    @PutMapping("/products/{id}")
+    @PutMapping("/api/products/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
         Product prod = productService.updateProduct(id, product);
         return ResponseEntity.ok(prod);
     }
 
-    @DeleteMapping("/products/{id}")
+    @DeleteMapping("/api/products/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();

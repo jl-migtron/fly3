@@ -61,7 +61,7 @@ public class ProductService {
         try {
             product2.setName(product.getName());
             product2.setPrice(product.getPrice());
-            product2.setCategory(product.getCategory());
+            // category changes not allowed through product update
             product2.setImage(product.getImage());
             Product product3 = repo.save(product2);
             logger.info("Updated product " + id);

@@ -23,7 +23,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,7 +40,7 @@ class ProductControllerTest {
     private ProductService service;
 
     public static final String TEST_CAT_PROD_URL = "/api/categories/{catId}/products";
-    public static final String TEST_PROD_URL = "/api/categories/products/{id}";
+    public static final String TEST_PROD_URL = "/api/products/{id}";
 
     @Test
     public void testCreateProduct() throws Exception {
@@ -59,7 +58,6 @@ class ProductControllerTest {
 
         // Assert that product is returned
         result.andExpect(status().isOk())
-            .andDo(print())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.id").value(prodId));
     }
