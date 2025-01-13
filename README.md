@@ -59,10 +59,10 @@ The app defines following CRUD APIs.
 | ------ | --- | ----------- | ------------------------- |  
 | GET    | /api/orders | Get all orders | | 
 | GET    | /api/orders/{id} | Get order by id | | 
-| GET    | /api/orders/status | Get orders by status | *Request params:* status (OPEN, DROPPED, FINISHED) | 
-| POST   | /api/orders | Create new order | *Request params:* seatnum, seatletter | 
+| GET    | /api/orders/status | Get orders by status | status (OPEN, DROPPED, FINISHED) | 
+| POST   | /api/orders | Create new order | seatnum, seatletter | 
 | PUT    | /api/orders/{id}/cancel | Cancel an order |  | 
-| PUT    | /api/orders/{id}/update | Update order with selected products | *Request params:* email, [JSON](#items) | 
+| PUT    | /api/orders/{id}/update | Update order with selected products | email, [JSON](#items) | 
 | PUT    | /api/orders/{id}/finish | Finish order with payment | [JSON](#payment) | 
 | DELETE | /api/orders/{id} | Delete order | |
 
@@ -93,15 +93,15 @@ Test them using postman or any other rest client.
 ```
 
 
-## STOCK SIMULATION: 
+## STOCK SIMULATION
 A SimpleStock component has been provided for tests purposes. It's composed by 20 products (ids 1L to 20L), all with 10 units available. 
 For production a proper repository, a service and a rest controller should be created for real stock management. 
 
-## STOCK SAFETY:
+## STOCK SAFETY
 To avoid stock race conditions (two customers ordering the same product) a product stock is considered "consumed" as soon as orders are updated (still open).
 If the order is eventually cancelled or finished with failed payment the "consumed" stocks are automatically "restored". 
 
-## Test examples:
+## TEST EXAMPLES
 
 -- add categories
 ```
@@ -131,7 +131,7 @@ PUT localhost:8080/api/orders/1/update?email=mark@gmail.com  [{"id":null,"produc
 GET localhost:8080/api/orders/1
 ```
 
--- open order and add items to it exhauting a product stock
+-- open order and add items to it exhausting a product stock
 ```
 POST localhost:8080/api/orders?seatnum=28&seatletter=A
 PUT localhost:8080/api/orders/2/update?email=tony@gmail.com  [{"id":null,"productId":1,"quantity":8,"price":100,"order":null},{"id":null,"productId":2,"quantity":8,"price":100,"order":null}]
