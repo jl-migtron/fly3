@@ -1,5 +1,6 @@
 package com.example.fly3.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -35,6 +36,7 @@ public class Order {
 
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
+    @JsonManagedReference
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> items = new ArrayList<>();
 
