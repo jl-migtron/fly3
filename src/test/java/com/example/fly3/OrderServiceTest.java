@@ -24,6 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class OrderServiceTest {
 
     private final Long WRONG_ID = -1000L;
+    private final int STOCK_SIZE = 10;
 
     @Autowired
     private OrderService orderService;
@@ -64,12 +65,24 @@ class OrderServiceTest {
     }
 
     @Test
+    public void givenOrderCreated_whenOrderCancelled_thenOrderDropped() throws Exception {
+
+        Order order = orderService.createOrder(25, "D");
+        String email = "mark@gmail.com";
+
+        Order order2 = orderService.cancelOrder(order.getId());
+
+        assertEquals(OrderStatus.DROPPED, order2.getStatus());
+    }
+
+    @Test
     public void givenOrderCreated_whenOrderUpdated_thenChangesApplied() throws Exception {
 
         Order order = orderService.createOrder(25, "D");
         String email = "mark@gmail.com";
 
-        List<OrderItem> items = createTestOrderItems();
+        orderService.initStock(STOCK_SIZE);
+        List<OrderItem> items = createTestOrderItems(5);
         Order order2 = orderService.updateOrder(order.getId(), email, items);
 
         List<OrderItem> items2 = order2.getItems();
@@ -80,12 +93,30 @@ class OrderServiceTest {
     }
 
     @Test
+    public void givenOrderCreated_whenOrderUpdatedwithExcess_thenChangesApplied() throws Exception {
+
+        Order order = orderService.createOrder(25, "D");
+        String email = "mark@gmail.com";
+
+        orderService.initStock(STOCK_SIZE);
+        List<OrderItem> items = createTestOrderItems(15);
+        Order order2 = orderService.updateOrder(order.getId(), email, items);
+
+        List<OrderItem> items2 = order2.getItems();
+        for (int i = 0; i < items.size(); i++) {
+            assertEquals(items.get(i), items2.get(i));
+        }
+        assertEquals(email, order2.getBuyer().getEmail());
+        assertEquals(STOCK_SIZE, items.get(0).getQuantity());
+    }
+
+    @Test
     public void givenOrderCreatedAndUpdated_whenPaidOK_thenOrderFinished() throws Exception {
 
         Order order = orderService.createOrder(25, "D");
         String email = "mark@gmail.com";
 
-        List<OrderItem> items = createTestOrderItems();
+        List<OrderItem> items = createTestOrderItems(5);
         orderService.updateOrder(order.getId(), email, items);
         Order order2 = orderService.finishOrder(order.getId(), createTestPayment(PaymentStatus.PAID));
 
@@ -98,7 +129,7 @@ class OrderServiceTest {
         Order order = orderService.createOrder(25, "D");
         String email = "mark@gmail.com";
 
-        List<OrderItem> items = createTestOrderItems();
+        List<OrderItem> items = createTestOrderItems(5);
         orderService.updateOrder(order.getId(), email, items);
         Order order2 = orderService.finishOrder(order.getId(), createTestPayment(PaymentStatus.OFFLINEPAYMENT));
 
@@ -111,7 +142,7 @@ class OrderServiceTest {
         Order order = orderService.createOrder(25, "D");
         String email = "mark@gmail.com";
 
-        List<OrderItem> items = createTestOrderItems();
+        List<OrderItem> items = createTestOrderItems(5);
         orderService.updateOrder(order.getId(), email, items);
         Order order2 = orderService.finishOrder(order.getId(), createTestPayment(PaymentStatus.PAYMENTFAILED));
 
@@ -128,12 +159,12 @@ class OrderServiceTest {
         assertTrue(orderService.getAllOrders().isEmpty());
     }
 
-    private List<OrderItem> createTestOrderItems() {
+    private List<OrderItem> createTestOrderItems(int quantity) {
         List<OrderItem> items = new ArrayList<>();
-        Long prod1Id = 123L;
-        Long prod2Id = 124L;
-        items.add(new OrderItem(null, prod1Id, 4, 100, null));
-        items.add(new OrderItem(null, prod2Id, 4, 100, null));
+        Long prod1Id = 13L;
+        Long prod2Id = 14L;
+        items.add(new OrderItem(null, prod1Id, quantity, 100, null));
+        items.add(new OrderItem(null, prod2Id, quantity, 100, null));
 
         return items;
     }

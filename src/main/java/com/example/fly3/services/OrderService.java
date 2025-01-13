@@ -32,6 +32,8 @@ public class OrderService {
     OrderRepo ordersRepo;
     @Autowired
     OrderItemRepo itemsRepo;
+    @Autowired
+    SimpleStock stock;
 
     public Order createOrder(int seatNum, String seatLetter) {
         try {
@@ -100,7 +102,10 @@ public class OrderService {
         Order order = ordersRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Order not found " + id.toString()));
         try {
             order.getBuyer().setEmail(email);
-            checkStock(orderItems);
+            logger.debug("stock: " + stock.toString());
+            logger.debug("pre consume: " + orderItems);
+            consumeStock(orderItems);
+            logger.debug("post consume: " + orderItems);
             int price = computePrice(orderItems);
             order.setPrice(price);
             order.setItems(orderItems);
@@ -118,6 +123,7 @@ public class OrderService {
     }
 
     // finish order with given id
+    @Transactional
     public Order finishOrder(Long id, Payment payment) {
         Order order = ordersRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Order not found " + id.toString()));
         try {
@@ -125,10 +131,10 @@ public class OrderService {
             switch (payment.getPayStatus()) {
                 case PAID, OFFLINEPAYMENT -> {
                     order.setStatus(OrderStatus.FINISHED);
-                    updateStock(order.getItems());
                 }
                 case PAYMENTFAILED -> {
                     order.setStatus(OrderStatus.DROPPED);
+                    restoreStock(order.getItems());
                     logger.warn("Failed payment -> order dropped " + id);
                 }
             }
@@ -141,16 +147,29 @@ public class OrderService {
         }
     }
 
-    private void checkStock(List<OrderItem> items) {
-        logger.info("TO DO: stock checked");        // TO DO
+    // initialized the stock of all products to given amount
+    public void initStock(int amount) {
+        stock.initStock(amount);
+    }
+
+    // order items are checked against the available stock
+    // and consumed accordingly
+    private void consumeStock(List<OrderItem> items) {
+        items.forEach(item -> {
+            int consumed = stock.consumeStock(item.getProductId(), item.getQuantity());
+            if (consumed != item.getQuantity()) {
+                item.setQuantity(consumed);
+            }
+        });
+    }
+
+    // stock is refilled with previously consumed items (due to failed payment for order)
+    private void restoreStock(List<OrderItem> items) {
+        items.forEach(item -> stock.refillStock(item.getProductId(), item.getQuantity()));
     }
 
     private int computePrice(List<OrderItem> items) {
         int price = items.stream().mapToInt(item -> item.getPrice() * item.getQuantity()).sum();
         return price;
-    }
-
-    private void updateStock(List<OrderItem> items) {
-        logger.info("TO DO: stock updated");        // TO DO
     }
 }
