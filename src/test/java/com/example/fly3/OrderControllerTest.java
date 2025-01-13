@@ -56,6 +56,7 @@ class OrderControllerTest {
 
     public static final String TEST_ORDERS_URL = "/api/orders";
     public static final String TEST_ORDERS_URL2 = "/api/orders/{id}";
+    public static final String TEST_ORDERS_CANCEL_URL = "/api/orders/{id}/cancel";
     public static final String TEST_ORDERS_UPDATE_URL = "/api/orders/{id}/update";
     public static final String TEST_ORDERS_FINISH_URL = "/api/orders/{id}/finish";
 
@@ -110,6 +111,23 @@ class OrderControllerTest {
             Order order = orders.get(i);
             result.andExpect(jsonPath("$[" + i + "].status").value(OrderStatus.OPEN.name()));
         }
+    }
+
+    @Test
+    public void testCancelOrder() throws Exception {
+
+        Order order = createTestOpenOrder();
+        order.setStatus(OrderStatus.DROPPED);
+        when(service.cancelOrder(anyLong())).thenReturn(order);
+
+        // Send PUT request with cancel
+        ResultActions result = mockMvc.perform(put(TEST_ORDERS_CANCEL_URL, order.getId()));
+
+        // Assert that order is returned with finished status
+        result.andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.id").value(order.getId()))
+            .andExpect(jsonPath("$.status").value(OrderStatus.DROPPED.name()));
     }
 
     @Test
